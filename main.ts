@@ -1,41 +1,61 @@
-// Pigeon Pitch, One Line
+// Pigeon Pitch, One Line — entry program
 //
-// The joke: a city pigeon pitching investors — and its startup is
-// monetizing the one thing pigeons already do to every parked car in
-// the city. "Impressions" is ad-industry jargon, but here it is
-// literal: bird droppings on windshields. The pitch sounds like a
-// real startup deck (impressions, zero ad spend, captive audience)
-// until the last clause lands the twist: the drivers can't opt out,
-// because nobody can opt out of pigeons. "Peck" is the startup's
-// name — and what pigeons do.
+// The pitch I wrote for this one: a city pigeon does not come to
+// investors with a deck, it comes with a flock. Homing pigeons were
+// the original courier network, so the startup here is a delivery
+// service whose couriers are already perched on every rooftop in
+// the city — no hiring, no vans, no fuel. Two investor phrases get
+// literalised along the way: the flock's "burn rate" is a few
+// breadcrumbs a day, and the closing ask is the joke only a bird
+// can make — pigeons will happily accept "seed funding", because
+// to a pigeon seed funding is lunch. The deadpan "Literally. We
+// eat it." is the pigeon not even realising it made a joke.
 
-import { writeFileSync, readFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-const LINE: string =
-  "Investors, meet Peck: the app that turns every parked car into ad space — 40 million impressions a day, zero ad spend, and the drivers literally cannot opt out.";
+const OUTPUT_PATH = "/output/entry.txt";
+const MAX_CHARS = 200;
+
+// The single line, in the pigeon's own voice: it opens with a coo,
+// states the traction (couriers on every rooftop, delivering since
+// long before email existed), brags about a burn rate measured in
+// breadcrumbs, then asks for seed funding and lands the literal
+// meaning as the punchline.
+const PITCH =
+  "Coo — we're Flock: couriers on every rooftop, delivering since before email, with a burn rate of three breadcrumbs a day. All we ask is seed funding. Literally. We eat it.";
+
+function checkPitch(line: string): void {
+  if (line.length === 0) {
+    throw new Error("pitch is empty");
+  }
+  if (line.length > MAX_CHARS) {
+    throw new Error(`pitch is ${line.length} characters, over the ${MAX_CHARS} limit`);
+  }
+  if (line.includes("\n") || line.includes("\r")) {
+    throw new Error("pitch must be exactly one line");
+  }
+  if (line.trim() !== line) {
+    throw new Error("pitch must not have leading or trailing whitespace");
+  }
+}
 
 function main(): void {
-  // Length gate: the entry line must be 1-200 characters, per the gate.
-  if (LINE.length < 1 || LINE.length > 200) {
-    throw new Error(`Line length ${LINE.length} is outside the 1-200 gate`);
-  }
+  checkPitch(PITCH);
 
   mkdirSync("/output", { recursive: true });
+  // No trailing newline: the file is the line, byte for byte.
+  writeFileSync(OUTPUT_PATH, PITCH, { encoding: "utf8" });
 
-  // Write the line with no trailing newline.
-  writeFileSync("/output/entry.txt", LINE, "utf8");
-
-  // Read it back and verify it matches exactly.
-  const readBack: string = readFileSync("/output/entry.txt", "utf8");
-  if (readBack !== LINE) {
-    throw new Error("Verification failed: file content does not match the line");
+  const written = readFileSync(OUTPUT_PATH, "utf8");
+  if (written !== PITCH) {
+    throw new Error("read-back does not match the pitch");
   }
-  if (readBack.endsWith("\n")) {
-    throw new Error("Verification failed: file must not end with a newline");
+  if (written.endsWith("\n")) {
+    throw new Error("file must not end with a newline");
   }
 
-  console.log(`Verified: ${readBack.length} characters`);
-  console.log(readBack);
+  console.log(`wrote ${written.length} chars / ${Buffer.byteLength(written, "utf8")} bytes`);
+  console.log(written);
 }
 
 main();
